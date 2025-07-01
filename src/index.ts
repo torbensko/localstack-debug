@@ -16,9 +16,10 @@ const sqs = new AWS.SQS({
 
 // List your LocalStack queue URLs
 const queueUrls = [
-  "http://localhost:4566/000000000000/fetch-queue",
-  "http://localhost:4566/000000000000/convert-queue",
-  "http://localhost:4566/000000000000/analyze-queue",
+  // "http://localhost:4566/000000000000/fetch-queue",
+  // "http://localhost:4566/000000000000/convert-queue",
+  // "http://localhost:4566/000000000000/analyze-queue",
+  "http://localhost:4566/000000000000/buildiq-queue",
 ];
 
 // Serve a simple HTML page with Socket.IO client
