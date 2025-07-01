@@ -1,11 +1,15 @@
 import express from "express";
 import http from "http";
+import path from "path";
 import { Server } from "socket.io";
 import AWS from "aws-sdk";
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
+
+// Serve static files from public directory
+app.use(express.static(path.join(__dirname, '..', 'public')));
 
 // Configure AWS SDK to talk to LocalStack using ap-southeast-2:
 const sqs = new AWS.SQS({
@@ -22,80 +26,9 @@ const queueUrls = [
   "http://localhost:4566/000000000000/buildiq-queue",
 ];
 
-// Serve a simple HTML page with Socket.IO client
+// Serve the main dashboard page
 app.get("/", (req, res) => {
-  // Basic CSS for columns and wrapping
-  res.send(`
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <title>SQS Dashboard</title>
-        <link rel="preconnect" href="https://fonts.googleapis.com">
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Cousine:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
-        <style>
-          body {
-            font-family: 'Cousine', monospace;
-            font-size: 12px;
-            padding: 20px;
-          }
-          h1 {
-            font-size: 34px;
-            margin: 20px 0;
-          }
-          h2 {
-            font-size: 16px;
-          }
-          .container {
-            display: flex;
-            flex-wrap: wrap;
-          }
-          .queue-column {
-            flex: 1 1 300px;
-            border: 1px solid #ccc;
-            margin: 10px;
-            padding: 10px;
-            min-width: 300px;
-            max-width: 600px;
-          }
-          pre {
-            white-space: pre-wrap; 
-            word-wrap: break-word; 
-          }
-        </style>
-      </head>
-      <body>
-        <h1>LocalStack SQS Dashboard</h1>
-        <div id="data" class="container"></div>
-
-        <script src="/socket.io/socket.io.js"></script>
-        <script>
-          const socket = io();
-          socket.on('update', (payload) => {
-            const container = document.getElementById('data');
-            container.innerHTML = '';
-
-            // payload is an array of objects => [ { url, attributes, messages }, ... ]
-            payload.forEach(queueInfo => {
-              const col = document.createElement('div');
-              col.classList.add('queue-column');
-              col.innerHTML = \`
-                <h2>\${queueInfo.url}</h2>
-                <ul>
-                  <li>ApproximateNumberOfMessages: \${queueInfo.attributes.ApproximateNumberOfMessages || 0}</li>
-                  <li>ApproximateNumberOfMessagesNotVisible: \${queueInfo.attributes.ApproximateNumberOfMessagesNotVisible || 0}</li>
-                  <li>ApproximateNumberOfMessagesDelayed: \${queueInfo.attributes.ApproximateNumberOfMessagesDelayed || 0}</li>
-                </ul>
-                <h3>Messages (peeked)</h3>
-                <pre>\${JSON.stringify(queueInfo.messages, null, 2)}</pre>
-              \`;
-              container.appendChild(col);
-            });
-          });
-        </script>
-      </body>
-    </html>
-  `);
+  res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
 });
 
 // Poll each queue, fetching attributes & messages

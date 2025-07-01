@@ -16,10 +16,13 @@ This is a real-time SQS monitoring dashboard for LocalStack development. It prov
 
 The application consists of:
 
-1. **Express Server** (`src/index.ts`): Main HTTP server that serves the dashboard UI and API
+1. **Express Server** (`src/index.ts`): Main HTTP server that serves static files and handles SQS polling
 2. **Socket.IO Integration**: Real-time WebSocket communication for live queue updates
 3. **AWS SQS Polling**: Continuous polling of LocalStack SQS queues every 5 seconds
-4. **Web Dashboard**: Single-page HTML interface with responsive column layout for queue visualization
+4. **Static Files** (`public/`): Separated frontend assets
+   - `public/index.html`: Main dashboard HTML
+   - `public/css/styles.css`: Dashboard styling
+   - `public/js/client.js`: Client-side Socket.IO logic
 
 ## Key Configuration
 
