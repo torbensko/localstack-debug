@@ -8,8 +8,8 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-// Serve static files from public directory
-app.use(express.static(path.join(__dirname, '..', 'public')));
+// Serve static files from React build
+app.use(express.static(path.join(__dirname, '..', 'dist', 'client')));
 
 // Configure AWS SDK to talk to LocalStack using ap-southeast-2:
 const sqs = new AWS.SQS({
@@ -31,7 +31,7 @@ async function discoverQueues(): Promise<string[]> {
 
 // Serve the main dashboard page
 app.get("/", (_req, res) => {
-  res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
+  res.sendFile(path.join(__dirname, '..', 'dist', 'client', 'index.html'));
 });
 
 // Poll each queue, fetching attributes & messages

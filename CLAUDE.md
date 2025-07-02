@@ -8,32 +8,42 @@ This is a real-time SQS monitoring dashboard for LocalStack development. It prov
 
 ## Development Commands
 
-- `yarn dev` - Start development server with hot reload (uses nodemon)
-- `yarn start` - Start production server directly with ts-node
-- `npx tsc` - Compile TypeScript (outputs to dist/ directory)
+- `yarn dev` - Start backend server with hot reload (uses nodemon)
+- `yarn dev:client` - Start frontend development server (Vite on port 5173)
+- `yarn dev:all` - Start both backend and frontend servers concurrently
+- `yarn build` - Build React frontend for production
+- `yarn start` - Start production server (requires build first)
+- `npx tsc` - Compile TypeScript backend (outputs to dist/ directory)
 
 ## Architecture
 
 The application consists of:
 
-1. **Express Server** (`src/index.ts`): Main HTTP server that serves static files and handles SQS polling
-2. **Socket.IO Integration**: Real-time WebSocket communication for live queue updates
-3. **AWS SQS Polling**: Continuous polling of LocalStack SQS queues every 5 seconds
-4. **Static Files** (`public/`): Separated frontend assets
-   - `public/index.html`: Main dashboard HTML
-   - `public/css/styles.css`: Dashboard styling
-   - `public/js/client.js`: Client-side Socket.IO logic
+1. **Backend** (`src/index.ts`): Express server with Socket.IO for real-time communication
+   - Serves built React application from `dist/client/`
+   - Dynamically discovers SQS queues using AWS SDK
+   - Polls all discovered queues every 5 seconds
+   - Broadcasts queue data via WebSocket
+
+2. **Frontend** (`client/`): React application with shadcn/ui components
+   - `client/src/App.tsx`: Main application component with Socket.IO client
+   - `client/src/components/QueueCard.tsx`: Individual queue display component
+   - `client/src/components/ui/`: shadcn/ui components (Card, etc.)
+   - Built with Vite and Tailwind CSS v4
+
+3. **Real-time Communication**: Socket.IO for live queue updates between backend and frontend
 
 ## Key Configuration
 
 - **LocalStack Endpoint**: `http://localhost:4566` (ap-southeast-2 region)
 - **Server Port**: 3001
-- **Queue URLs**: Configured in `queueUrls` array in `src/index.ts:18-23`
+- **Queue Discovery**: Dynamically discovered from LocalStack
 - **Polling Interval**: 5 seconds
 
 ## LocalStack Integration
 
 - Uses AWS SDK v2 configured for LocalStack
+- Dynamically discovers all SQS queues using `listQueues()`
 - Polls queue attributes: `ApproximateNumberOfMessages`, `ApproximateNumberOfMessagesNotVisible`, `ApproximateNumberOfMessagesDelayed`
 - Receives up to 5 messages per queue with 5-second visibility timeout
 - Messages are peeked (not deleted) to maintain visibility for debugging
@@ -41,6 +51,15 @@ The application consists of:
 ## Development Setup
 
 1. Ensure LocalStack is running on port 4566
-2. Configure your SQS queue URLs in the `queueUrls` array
-3. Run `yarn dev` to start the development server
-4. Access dashboard at `http://localhost:3001`
+2. For development: Run `yarn dev:all` to start both backend (port 3001) and frontend (port 5173)
+3. For production: Run `yarn build` then `yarn start`
+4. Access dashboard at:
+   - Development: `http://localhost:5173` (with proxy to backend)
+   - Production: `http://localhost:3001`
+
+## Technology Stack
+
+- **Backend**: Node.js, Express, Socket.IO, AWS SDK v2
+- **Frontend**: React 19, TypeScript, shadcn/ui, Tailwind CSS v4
+- **Build Tools**: Vite, PostCSS
+- **Development**: nodemon, concurrently
