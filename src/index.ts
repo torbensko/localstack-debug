@@ -18,22 +18,34 @@ const sqs = new AWS.SQS({
   // If needed: accessKeyId: 'test', secretAccessKey: 'test',
 });
 
-// List your LocalStack queue URLs
-const queueUrls = [
-  // "http://localhost:4566/000000000000/fetch-queue",
-  // "http://localhost:4566/000000000000/convert-queue",
-  // "http://localhost:4566/000000000000/analyze-queue",
-  "http://localhost:4566/000000000000/buildiq-queue",
-];
+// Function to discover all SQS queues dynamically
+async function discoverQueues(): Promise<string[]> {
+  try {
+    const result = await sqs.listQueues().promise();
+    return result.QueueUrls || [];
+  } catch (err) {
+    console.error("Error discovering queues:", err);
+    return [];
+  }
+}
 
 // Serve the main dashboard page
-app.get("/", (req, res) => {
+app.get("/", (_req, res) => {
   res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
 });
 
 // Poll each queue, fetching attributes & messages
 async function pollQueues() {
   try {
+    // Discover queues dynamically
+    const queueUrls = await discoverQueues();
+    
+    if (queueUrls.length === 0) {
+      console.log("No queues found");
+      io.emit("update", []);
+      return;
+    }
+    
     const results = await Promise.all(
       queueUrls.map(async (QueueUrl) => {
         // Fetch approximate stats
