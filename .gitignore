@@ -18,3 +18,4 @@
 !.claude/*
 
 node_modules
+dist/

@@ -9,7 +9,8 @@
       "Bash(yarn tailwindcss init:*)",
       "Bash(npx shadcn@latest add:*)",
       "Bash(yarn build)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "Bash(git rm:*)"
     ],
     "deny": []
   }
